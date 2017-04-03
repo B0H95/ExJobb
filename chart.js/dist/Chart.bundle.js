@@ -8050,6 +8050,49 @@ module.exports = function (Chart) {
 			line: {
 				tension: 0 // no bezier in windradar
 			}
+		},
+		tooltips: {
+			enabled: true,
+			custom: function (tooltip) {
+				if (tooltip.title && tooltip.dataPoints) {
+					var datasetIndex = tooltip.dataPoints[0].index;
+					var yval = this._chart.config.data.datasets[0].data[datasetIndex].y;
+					console.log(yval);
+					tooltip.title[0] = parseInt(yval) + ' (deg)';
+				}
+
+				var height = tooltip.yPadding * 2; // Tooltip Padding
+
+				// Count of all lines in the body
+				if (tooltip.dataPoints == null || tooltip.dataPoints.length === 0) {
+					return tooltip;
+				}
+
+				var body = tooltip.body;
+				var combinedBodyLength = body.reduce(function (count, bodyItem) {
+					return count + bodyItem.before.length + bodyItem.lines.length + bodyItem.after.length;
+				}, 0);
+				combinedBodyLength += tooltip.beforeBody.length + tooltip.afterBody.length;
+
+				var titleLineCount = tooltip.title.length;
+				var footerLineCount = tooltip.footer.length;
+				var titleFontSize = tooltip.titleFontSize,
+					bodyFontSize = tooltip.bodyFontSize,
+					footerFontSize = tooltip.footerFontSize;
+
+				height += titleLineCount * titleFontSize; // Title Lines
+				height += titleLineCount ? (titleLineCount - 1) * tooltip.titleSpacing : 0; // Title Line Spacing
+				height += titleLineCount ? tooltip.titleMarginBottom : 0; // Title's bottom Margin
+				height += combinedBodyLength * bodyFontSize; // Body Lines
+				height += combinedBodyLength ? (combinedBodyLength - 1) * tooltip.bodySpacing : 0; // Body Line Spacing
+				height += footerLineCount ? tooltip.footerMarginTop : 0; // Footer Margin
+				height += footerLineCount * (footerFontSize); // Footer Lines
+				height += footerLineCount ? (footerLineCount - 1) * tooltip.footerSpacing : 0; // Footer Line Spacing
+
+				tooltip.height = height;
+
+				return tooltip;
+			}
 		}
 	};
 
@@ -8182,6 +8225,7 @@ module.exports = function (Chart) {
 
 			// Transition and Draw the line
 			// TODO: Maybe we should find a better solution...
+
 			var saved = meta.dataset._children.slice();
 			var temporaryDataset = meta.dataset._children.slice();
 			var reversedDataset = temporaryDataset.slice();
@@ -17302,6 +17346,7 @@ module.exports = function(Chart) {
 			Chart.LinearScaleBase.prototype.convertTicksToLabels.call(me);
 
 			// Point labels
+			//me.chart.dataset.data
 			me.pointLabels = me.chart.data.labels.map(me.options.pointLabels.callback, me);
 		},
 		getRightValue: function(rawValue) {
