@@ -7,7 +7,17 @@ module.exports = function (Chart) {
 	Chart.defaults.windRadar = {
 		aspectRatio: 1,
 		scale: {
-			type: 'windDirection'
+			type: 'windDirection',
+			ticks: {
+				userCallback: function (value, index, values) {
+					var units = "m";
+					if (values[values.length - 1] > 1000) {
+						units = "km";
+						value = Math.round(value * 100) / 100000;
+					}
+					return parseFloat(value) + units;
+				}
+			}
 		},
 		elements: {
 			line: {
