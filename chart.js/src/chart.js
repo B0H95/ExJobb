@@ -31,7 +31,7 @@ require('./scales/scale.linear')(Chart);
 require('./scales/scale.logarithmic')(Chart);
 require('./scales/scale.radialLinear')(Chart);
 require('./scales/scale.time')(Chart);
-require('./scales/scale.windDirection')(Chart); //NEW
+require('./scales/scale.windDirection')(Chart); // NEW
 
 // Controllers must be loaded after elements
 // See Chart.core.datasetController.dataElementType
@@ -41,6 +41,7 @@ require('./controllers/controller.doughnut')(Chart);
 require('./controllers/controller.line')(Chart);
 require('./controllers/controller.polarArea')(Chart);
 require('./controllers/controller.radar')(Chart);
+require('./controllers/controller.windRadar')(Chart); // NEW
 
 require('./charts/Chart.Bar')(Chart);
 require('./charts/Chart.Bubble')(Chart);
@@ -49,5 +50,6 @@ require('./charts/Chart.Line')(Chart);
 require('./charts/Chart.PolarArea')(Chart);
 require('./charts/Chart.Radar')(Chart);
 require('./charts/Chart.Scatter')(Chart);
+require('./charts/Chart.WindRadar')(Chart); // NEW
 
 window.Chart = module.exports = Chart;

@@ -1667,46 +1667,47 @@ module.exports = {
 /**
  * @namespace Chart
  */
-var Chart = require(28)();
+var Chart = require(30)();
 
-require(26)(Chart);
-require(42)(Chart);
-require(22)(Chart);
-require(31)(Chart);
-require(25)(Chart);
-require(21)(Chart);
-require(23)(Chart);
+require(28)(Chart);
+require(44)(Chart);
 require(24)(Chart);
-require(29)(Chart);
 require(33)(Chart);
-require(34)(Chart);
-require(32)(Chart);
-require(35)(Chart);
-require(30)(Chart);
 require(27)(Chart);
+require(23)(Chart);
+require(25)(Chart);
+require(26)(Chart);
+require(31)(Chart);
+require(35)(Chart);
 require(36)(Chart);
-
+require(34)(Chart);
 require(37)(Chart);
+require(32)(Chart);
+require(29)(Chart);
 require(38)(Chart);
+
 require(39)(Chart);
 require(40)(Chart);
+require(41)(Chart);
+require(42)(Chart);
 
-require(45)(Chart);
-require(43)(Chart);
-require(44)(Chart);
-require(46)(Chart);
 require(47)(Chart);
+require(45)(Chart);
+require(46)(Chart);
 require(48)(Chart);
-require(49)(Chart); //NEW
+require(49)(Chart);
+require(50)(Chart);
+require(51)(Chart); // NEW
 
 // Controllers must be loaded after elements
 // See Chart.core.datasetController.dataElementType
-require(15)(Chart);
 require(16)(Chart);
 require(17)(Chart);
 require(18)(Chart);
 require(19)(Chart);
 require(20)(Chart);
+require(21)(Chart);
+require(22)(Chart); // NEW
 
 require(8)(Chart);
 require(9)(Chart);
@@ -1715,10 +1716,11 @@ require(11)(Chart);
 require(12)(Chart);
 require(13)(Chart);
 require(14)(Chart);
+require(15)(Chart); // NEW
 
 window.Chart = module.exports = Chart;
 
-},{"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20,"21":21,"22":22,"23":23,"24":24,"25":25,"26":26,"27":27,"28":28,"29":29,"30":30,"31":31,"32":32,"33":33,"34":34,"35":35,"36":36,"37":37,"38":38,"39":39,"40":40,"42":42,"43":43,"44":44,"45":45,"46":46,"47":47,"48":48,"49":49,"8":8,"9":9}],8:[function(require,module,exports){
+},{"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20,"21":21,"22":22,"23":23,"24":24,"25":25,"26":26,"27":27,"28":28,"29":29,"30":30,"31":31,"32":32,"33":33,"34":34,"35":35,"36":36,"37":37,"38":38,"39":39,"40":40,"41":41,"42":42,"44":44,"45":45,"46":46,"47":47,"48":48,"49":49,"50":50,"51":51,"8":8,"9":9}],8:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -1845,6 +1847,19 @@ module.exports = function(Chart) {
 };
 
 },{}],15:[function(require,module,exports){
+'use strict';
+
+module.exports = function(Chart) {
+
+	Chart.WindRadar = function(context, config) {
+		config.type = 'windRadar';
+
+		return new Chart(context, config);
+	};
+
+};
+
+},{}],16:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -2386,7 +2401,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -2510,7 +2525,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -2815,7 +2830,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -3156,7 +3171,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -3373,7 +3388,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -3556,7 +3571,201 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
+'use strict';
+
+module.exports = function (Chart) {
+
+	var helpers = Chart.helpers;
+
+	Chart.defaults.windRadar = {
+		aspectRatio: 1,
+		scale: {
+			type: 'windDirection'
+		},
+		elements: {
+			line: {
+				tension: 0 // no bezier in windradar
+			}
+		}
+	};
+
+	Chart.controllers.windRadar = Chart.DatasetController.extend({
+
+		datasetElementType: Chart.elements.Line,
+
+		dataElementType: Chart.elements.Point,
+
+		linkScales: helpers.noop,
+
+		update: function (reset) {
+			var me = this;
+			var meta = me.getMeta();
+			var line = meta.dataset;
+			var points = meta.data;
+			var custom = line.custom || {};
+			var dataset = me.getDataset();
+			var lineElementOptions = me.chart.options.elements.line;
+			var scale = me.chart.scale;
+
+			// Compatibility: If the properties are defined with only the old name, use those values
+			if ((dataset.tension !== undefined) && (dataset.lineTension === undefined)) {
+				dataset.lineTension = dataset.tension;
+			}
+
+			helpers.extend(meta.dataset, {
+				// Utility
+				_datasetIndex: me.index,
+				// Data
+				_children: points,
+				_loop: true,
+				// Model
+				_model: {
+					// Appearance
+					tension: custom.tension ? custom.tension : helpers.getValueOrDefault(dataset.lineTension, lineElementOptions.tension),
+					backgroundColor: custom.backgroundColor ? custom.backgroundColor : (dataset.backgroundColor || lineElementOptions.backgroundColor),
+					borderWidth: custom.borderWidth ? custom.borderWidth : (dataset.borderWidth || lineElementOptions.borderWidth),
+					borderColor: custom.borderColor ? custom.borderColor : (dataset.borderColor || lineElementOptions.borderColor),
+					fill: custom.fill ? custom.fill : (dataset.fill !== undefined ? dataset.fill : lineElementOptions.fill),
+					borderCapStyle: custom.borderCapStyle ? custom.borderCapStyle : (dataset.borderCapStyle || lineElementOptions.borderCapStyle),
+					borderDash: custom.borderDash ? custom.borderDash : (dataset.borderDash || lineElementOptions.borderDash),
+					borderDashOffset: custom.borderDashOffset ? custom.borderDashOffset : (dataset.borderDashOffset || lineElementOptions.borderDashOffset),
+					borderJoinStyle: custom.borderJoinStyle ? custom.borderJoinStyle : (dataset.borderJoinStyle || lineElementOptions.borderJoinStyle),
+
+					// Scale
+					scaleTop: scale.top,
+					scaleBottom: scale.bottom,
+					scaleZero: scale.getBasePosition()
+				}
+			});
+
+			meta.dataset.pivot();
+
+			// Update Points
+			helpers.each(points, function (point, index) {
+				me.updateElement(point, index, reset);
+			}, me);
+
+			// Update bezier control points
+			me.updateBezierControlPoints();
+		},
+		updateElement: function (point, index, reset) {
+			var me = this;
+			var custom = point.custom || {};
+			var dataset = me.getDataset();
+			var scale = me.chart.scale;
+			var pointElementOptions = me.chart.options.elements.point;
+			var pointPosition = scale.getPointPositionForValue(index, dataset.data[index]);
+
+			helpers.extend(point, {
+				// Utility
+				_datasetIndex: me.index,
+				_index: index,
+				_scale: scale,
+
+				// Desired view properties
+				_model: {
+					x: reset ? scale.xCenter : pointPosition.x, // value not used in dataset scale, but we want a consistent API between scales
+					y: reset ? scale.yCenter : pointPosition.y,
+
+					// Appearance
+					tension: custom.tension ? custom.tension : helpers.getValueOrDefault(dataset.lineTension, me.chart.options.elements.line.tension),
+					radius: custom.radius ? custom.radius : helpers.getValueAtIndexOrDefault(dataset.pointRadius, index, pointElementOptions.radius),
+					backgroundColor: custom.backgroundColor ? custom.backgroundColor : helpers.getValueAtIndexOrDefault(dataset.pointBackgroundColor, index, pointElementOptions.backgroundColor),
+					borderColor: custom.borderColor ? custom.borderColor : helpers.getValueAtIndexOrDefault(dataset.pointBorderColor, index, pointElementOptions.borderColor),
+					borderWidth: custom.borderWidth ? custom.borderWidth : helpers.getValueAtIndexOrDefault(dataset.pointBorderWidth, index, pointElementOptions.borderWidth),
+					pointStyle: custom.pointStyle ? custom.pointStyle : helpers.getValueAtIndexOrDefault(dataset.pointStyle, index, pointElementOptions.pointStyle),
+
+					// Tooltip
+					hitRadius: custom.hitRadius ? custom.hitRadius : helpers.getValueAtIndexOrDefault(dataset.hitRadius, index, pointElementOptions.hitRadius)
+				}
+			});
+
+			point._model.skip = custom.skip ? custom.skip : (isNaN(point._model.x) || isNaN(point._model.y));
+		},
+		updateBezierControlPoints: function () {
+			var chartArea = this.chart.chartArea;
+			var meta = this.getMeta();
+
+			helpers.each(meta.data, function (point, index) {
+				var model = point._model;
+				var controlPoints = helpers.splineCurve(
+					helpers.previousItem(meta.data, index, true)._model,
+					model,
+					helpers.nextItem(meta.data, index, true)._model,
+					model.tension
+				);
+
+				// Prevent the bezier going outside of the bounds of the graph
+				model.controlPointPreviousX = Math.max(Math.min(controlPoints.previous.x, chartArea.right), chartArea.left);
+				model.controlPointPreviousY = Math.max(Math.min(controlPoints.previous.y, chartArea.bottom), chartArea.top);
+
+				model.controlPointNextX = Math.max(Math.min(controlPoints.next.x, chartArea.right), chartArea.left);
+				model.controlPointNextY = Math.max(Math.min(controlPoints.next.y, chartArea.bottom), chartArea.top);
+
+				// Now pivot the point for animation
+				point.pivot();
+			});
+		},
+
+		draw: function (ease) {
+			var meta = this.getMeta();
+			var easingDecimal = ease || 1;
+
+			// Transition Point Locations
+			helpers.each(meta.data, function (point) {
+				point.transition(easingDecimal);
+			});
+
+			// Transition and Draw the line
+			// TODO: Maybe we should find a better solution...
+			var saved = meta.dataset._children.slice();
+			var temporaryDataset = meta.dataset._children.slice();
+			var reversedDataset = temporaryDataset.slice();
+			reversedDataset.pop();
+			reversedDataset.reverse();
+			temporaryDataset = temporaryDataset.concat(reversedDataset);
+			meta.dataset._children = temporaryDataset;
+
+			meta.dataset.transition(easingDecimal).draw();
+
+			meta.dataset._children = saved;
+
+			// Draw the points
+			helpers.each(meta.data, function (point) {
+				point.draw();
+			});
+		},
+
+		setHoverStyle: function (point) {
+			// Point
+			var dataset = this.chart.data.datasets[point._datasetIndex];
+			var custom = point.custom || {};
+			var index = point._index;
+			var model = point._model;
+
+			model.radius = custom.hoverRadius ? custom.hoverRadius : helpers.getValueAtIndexOrDefault(dataset.pointHoverRadius, index, this.chart.options.elements.point.hoverRadius);
+			model.backgroundColor = custom.hoverBackgroundColor ? custom.hoverBackgroundColor : helpers.getValueAtIndexOrDefault(dataset.pointHoverBackgroundColor, index, helpers.getHoverColor(model.backgroundColor));
+			model.borderColor = custom.hoverBorderColor ? custom.hoverBorderColor : helpers.getValueAtIndexOrDefault(dataset.pointHoverBorderColor, index, helpers.getHoverColor(model.borderColor));
+			model.borderWidth = custom.hoverBorderWidth ? custom.hoverBorderWidth : helpers.getValueAtIndexOrDefault(dataset.pointHoverBorderWidth, index, model.borderWidth);
+		},
+
+		removeHoverStyle: function (point) {
+			var dataset = this.chart.data.datasets[point._datasetIndex];
+			var custom = point.custom || {};
+			var index = point._index;
+			var model = point._model;
+			var pointElementOptions = this.chart.options.elements.point;
+
+			model.radius = custom.radius ? custom.radius : helpers.getValueAtIndexOrDefault(dataset.radius, index, pointElementOptions.radius);
+			model.backgroundColor = custom.backgroundColor ? custom.backgroundColor : helpers.getValueAtIndexOrDefault(dataset.pointBackgroundColor, index, pointElementOptions.backgroundColor);
+			model.borderColor = custom.borderColor ? custom.borderColor : helpers.getValueAtIndexOrDefault(dataset.pointBorderColor, index, pointElementOptions.borderColor);
+			model.borderWidth = custom.borderWidth ? custom.borderWidth : helpers.getValueAtIndexOrDefault(dataset.pointBorderWidth, index, pointElementOptions.borderWidth);
+		}
+	});
+};
+
+},{}],23:[function(require,module,exports){
 /* global window: false */
 'use strict';
 
@@ -3697,7 +3906,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -3823,7 +4032,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -4577,7 +4786,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -4888,7 +5097,7 @@ module.exports = function(Chart) {
 	Chart.DatasetController.extend = helpers.inherits;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -4986,7 +5195,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /* global window: false */
 /* global document: false */
 'use strict';
@@ -5957,7 +6166,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{"3":3}],27:[function(require,module,exports){
+},{"3":3}],29:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -6271,7 +6480,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 module.exports = function() {
@@ -6329,7 +6538,7 @@ module.exports = function() {
 	return Chart;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -6700,7 +6909,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],30:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -7238,7 +7447,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -7565,7 +7774,7 @@ module.exports = function(Chart) {
 	Chart.PluginBase = helpers.inherits({});
 };
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -8326,7 +8535,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -8368,7 +8577,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -8578,7 +8787,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],35:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -8800,7 +9009,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -9682,7 +9891,7 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],37:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -9788,7 +9997,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],38:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -9974,7 +10183,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -10076,7 +10285,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -10286,7 +10495,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],41:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 
 // Chart.Platform implementation for targeting a web browser
@@ -10565,12 +10774,12 @@ module.exports = function(Chart) {
 	};
 };
 
-},{}],42:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 
 // By default, select the browser (DOM) platform.
 // @TODO Make possible to select another platform at build time.
-var implementation = require(41);
+var implementation = require(43);
 
 module.exports = function(Chart) {
 	/**
@@ -10636,7 +10845,7 @@ module.exports = function(Chart) {
 	Chart.helpers.extend(Chart.platform, implementation(Chart));
 };
 
-},{"41":41}],43:[function(require,module,exports){
+},{"43":43}],45:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -10763,7 +10972,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -10949,7 +11158,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -11049,7 +11258,7 @@ module.exports = function(Chart) {
 	});
 };
 
-},{}],46:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -11295,7 +11504,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],47:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
@@ -11810,7 +12019,7 @@ module.exports = function(Chart) {
 
 };
 
-},{}],48:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 /* global window: false */
 'use strict';
 
@@ -12268,7 +12477,7 @@ module.exports = function(Chart) {
 
 };
 
-},{"1":1}],49:[function(require,module,exports){
+},{"1":1}],51:[function(require,module,exports){
 'use strict';
 
 module.exports = function(Chart) {
