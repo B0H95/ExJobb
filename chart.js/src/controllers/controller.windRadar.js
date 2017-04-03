@@ -20,7 +20,6 @@ module.exports = function (Chart) {
 				if (tooltip.title && tooltip.dataPoints) {
 					var datasetIndex = tooltip.dataPoints[0].index;
 					var yval = this._chart.config.data.datasets[0].data[datasetIndex].y;
-					console.log(yval);
 					tooltip.title[0] = parseInt(yval) + ' (deg)';
 				}
 

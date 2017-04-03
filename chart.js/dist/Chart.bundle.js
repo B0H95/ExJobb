@@ -17346,7 +17346,6 @@ module.exports = function(Chart) {
 			Chart.LinearScaleBase.prototype.convertTicksToLabels.call(me);
 
 			// Point labels
-			//me.chart.dataset.data
 			me.pointLabels = me.chart.data.labels.map(me.options.pointLabels.callback, me);
 		},
 		getRightValue: function(rawValue) {
