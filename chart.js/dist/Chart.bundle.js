@@ -8044,7 +8044,17 @@ module.exports = function (Chart) {
 	Chart.defaults.windRadar = {
 		aspectRatio: 1,
 		scale: {
-			type: 'windDirection'
+			type: 'windDirection',
+			ticks: {
+				userCallback: function (value, index, values) {
+					var units = "m";
+					if (values[values.length - 1] > 1000) {
+						units = "km";
+						value = Math.round(value * 100) / 100000;
+					}
+					return parseFloat(value) + units;
+				}
+			}
 		},
 		elements: {
 			line: {
@@ -8057,7 +8067,6 @@ module.exports = function (Chart) {
 				if (tooltip.title && tooltip.dataPoints) {
 					var datasetIndex = tooltip.dataPoints[0].index;
 					var yval = this._chart.config.data.datasets[0].data[datasetIndex].y;
-					console.log(yval);
 					tooltip.title[0] = parseInt(yval) + ' (deg)';
 				}
 
