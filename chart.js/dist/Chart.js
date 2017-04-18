@@ -12979,7 +12979,7 @@ module.exports = function(Chart) {
 			var me = this;
 			var distFromCenter = me.getDistanceFromCenterForValue(value);
 			// var thisAngle = me.getIndexAngle(index) - (Math.PI / 2);
-			var thisAngle = (value.x * Math.PI / 180);
+			var thisAngle = ((-value.x + 90) * Math.PI / 180);
 			return {
 				x: Math.round(Math.cos(thisAngle) * distFromCenter) + me.xCenter,
 				y: Math.round(-Math.sin(thisAngle) * distFromCenter) + me.yCenter
