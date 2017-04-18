@@ -362,7 +362,7 @@ module.exports = function(Chart) {
 			me.pointLabels = me.chart.data.labels.map(me.options.pointLabels.callback, me);
 		},
 		getRightValue: function(rawValue) {
-			return rawValue.x;
+			return rawValue.y;
 		},
 		getLabelForIndex: function(index, datasetIndex) {
 			return +this.getRightValue(this.chart.data.datasets[datasetIndex].data[index]);
@@ -432,7 +432,7 @@ module.exports = function(Chart) {
 			if (typeof value === 'number') {
 				return (value - me.min) * scalingFactor;
 			}
-			return (value.x - me.min) * scalingFactor;
+			return (value.y - me.min) * scalingFactor;
 		},
 		getPointPosition: function(index, distanceFromCenter) {
 			var me = this;
@@ -446,7 +446,7 @@ module.exports = function(Chart) {
 			var me = this;
 			var distFromCenter = me.getDistanceFromCenterForValue(value);
 			// var thisAngle = me.getIndexAngle(index) - (Math.PI / 2);
-			var thisAngle = (value.y * Math.PI / 180);
+			var thisAngle = ((-value.x + 90) * Math.PI / 180);
 			return {
 				x: Math.round(Math.cos(thisAngle) * distFromCenter) + me.xCenter,
 				y: Math.round(-Math.sin(thisAngle) * distFromCenter) + me.yCenter
